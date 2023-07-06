@@ -5,11 +5,14 @@ package com.example.googlevue11_server.service;
 import com.example.googlevue11_server.models.User;
 import com.example.googlevue11_server.repository.UserRepository;
 import com.example.googlevue11_server.notifications.LoginNeedsVerification;
+import com.example.googlevue11_server.utils.JwtUtil;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Optional;
 
@@ -17,6 +20,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    //private final JwtUtil jwtUtil;
 
     @Autowired
     public UserService(UserRepository userRepository) {
@@ -38,9 +42,9 @@ public class UserService {
         return user;
     }
 
-    public User findUserByPhoneAndLoginCode(String phoneNumber, int loginCode) {
+    public User findUserByPhone(String phoneNumber) {
         // Find the user by phone number and login code
-        return userRepository.findByPhoneNumberAndLoginCode(phoneNumber, loginCode);
+        return userRepository.findByPhoneNumber(phoneNumber);
     }
 
     public void saveUser(User user) {
@@ -62,11 +66,13 @@ public class UserService {
         // You can use libraries like io.jsonwebtoken.Jwts to generate JWT tokens
 
         // Example implementation:
-        String secretKey = "1234"; // Replace with your own secret key
+        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
+        // 토큰 생성
         String token = Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // Token expires in 24 hours
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .setIssuedAt(new Date())
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         return token;
@@ -81,10 +87,10 @@ public class UserService {
         // using the provided notification object and the user's phone number
         // Example:
         String phoneNumber = user.getPhoneNumber();
-        String message = notification.getMessage();
+       // String message = notification.getMessage();
         // Implement logic to send the notification using Twilio or any other messaging service
         // twilioMessagingService.sendMessage(phoneNumber, message);
-        System.out.println("Sending notification to " + phoneNumber + ": " + message);
+       // System.out.println("Sending notification to " + phoneNumber + ": " + message);
     }
 
     public User getUserById(String id) {

@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Service
 public class TwilioMessagingService {
     private static final String ACCOUNT_SID = "ACc38d3a007a1fca976f03152b65ca2356";
-    private static final String AUTH_TOKEN = "0c56da4c3d24c7e98196168f51a4d557";
+    private static final String AUTH_TOKEN = "159b15d9cd67269aeb0533fc0d1d68dd";
     private static final String FROM_PHONE_NUMBER = "+16183864018";
 
     public TwilioMessagingService() {

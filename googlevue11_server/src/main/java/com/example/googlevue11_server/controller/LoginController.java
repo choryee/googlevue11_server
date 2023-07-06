@@ -1,5 +1,6 @@
 package com.example.googlevue11_server.controller;
 
+import com.example.googlevue11_server.messaging.LoginCodeGenerator;
 import com.example.googlevue11_server.messaging.TwilioMessagingService;
 import com.example.googlevue11_server.models.User;
 import com.example.googlevue11_server.notifications.LoginNeedsVerification;
@@ -18,6 +19,8 @@ public class LoginController {
     UserService userService;
     @Autowired
     TwilioMessagingService twilioMessagingService;
+
+    LoginCodeGenerator loginCodeGenerator=new LoginCodeGenerator();
 
 //    @Autowired
 //    public LoginController(UserService userService, TwilioMessagingService twilioMessagingService) {
@@ -50,31 +53,34 @@ public class LoginController {
         loginNeedsVerification.sendNotification(phoneRequest.phone);
         //user.sendNotification(new LoginNeedsVerification(twilioMessagingService));
 
+        //System.out.println(loginCodeGenerator.generateLoginCode());
+
         // Return a response
         return ResponseEntity.ok("Text message notification sent. 확인문자 발송됨...");
     }
 
     @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyCode(@Validated @RequestBody VerificationRequest verificationRequest) { //VerificationRequest 밑에 있음.
+    public ResponseEntity<?> verifyCode(@RequestBody VerificationRequest verificationRequest) { //VerificationRequest 밑에 있음.
         // Validate the incoming request
-        if (verificationRequest.getPhone() == null || verificationRequest.getPhone().length() < 10
-                || verificationRequest.getLoginCode() < 111111
-                || verificationRequest.getLoginCode() > 999999) {
+        if (verificationRequest.getPhone() == null || verificationRequest.getPhone().length() < 10) {
             return ResponseEntity.badRequest().body("Invalid verification request.");
         }
-
+        System.out.println("verificationRequest.getLoginCode()>>"+ verificationRequest.getLogin_code());
+        System.out.println("verificationRequest.getPhone()>>"+ verificationRequest.getPhone());
         // Find the user
-        User user = userService.findUserByPhoneAndLoginCode(verificationRequest.getPhone(), verificationRequest.getLoginCode());
+        User user = userService.findUserByPhone(verificationRequest.getPhone());
 
         // Check if the provided code is valid
-        if (user != null) {
+        if (user != null) {// user있으면,
             // Clear the login code
-            user.setLoginCode(user.getLoginCode());
+            System.out.println("user>>"+ user);
+            user.setLoginCode(verificationRequest.getLogin_code());
             userService.saveUser(user);
 
             // Return an auth token
             String authToken = userService.generateAuthToken(user);
+            System.out.println("authToken>>"+authToken);
             return ResponseEntity.ok(authToken);
         }
 
@@ -97,7 +103,7 @@ public class LoginController {
 
     static class VerificationRequest {
         private String phone;
-        private int loginCode;
+        private String login_code;
 
         public String getPhone() {
             return phone;
@@ -107,12 +113,13 @@ public class LoginController {
             this.phone = phone;
         }
 
-        public int getLoginCode() {
-            return loginCode;
+        public String getLogin_code() {
+            return login_code;
         }
 
-        public void setLoginCode(int loginCode) {
-            this.loginCode = loginCode;
+        public void setLogin_code(String login_code) {
+            this.login_code = login_code;
         }
     }
+
 }

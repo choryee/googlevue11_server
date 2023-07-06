@@ -26,11 +26,11 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "phone", unique = true, nullable = true)
+    @Column(name = "phone", nullable = true)
     private String phoneNumber;
 
     @Column(name = "login_code")
-    private int loginCode;
+    private String loginCode;
 
     @Column(name = "remember_token")
     private String rememberToken;
@@ -65,11 +65,11 @@ public class User {
         this.phoneNumber = phone;
     }
 
-    public int getLoginCode() {
+    public String getLoginCode() {
         return loginCode;
     }
 
-    public void setLoginCode(int loginCode) {
+    public void setLoginCode(String loginCode) {
         this.loginCode = loginCode;
     }
 
