@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -16,44 +17,91 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
+@Table(name = "users")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @Column(nullable = true, length = 100)
-    private String name; // 아이디
+    @Column(name = "name")
+    private String name;
 
-    @Column(nullable = true, length = 100)
-    private Driver driver;
-
-    @Column(nullable = true, length = 100)
+    @Column(name = "phone", unique = true, nullable = true)
     private String phoneNumber;
 
-    @Column(nullable = true, length = 100)
-    private String loginCode;
+    @Column(name = "login_code")
+    private int loginCode;
 
-    //@OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    @Column(nullable = true, length = 100)
-    private List<Trip> trip;
+    @Column(name = "remember_token")
+    private String rememberToken;
 
+    @Column(name = "created_at", nullable = true)
+    private LocalDateTime createdAt;
 
-    @DateTimeFormat(pattern = "yyyy-mm-dd")
-    private LocalDate createDate; // 날짜
+    @Column(name = "updated_at", nullable = true)
+    private LocalDateTime updatedAt;
 
-    @PrePersist // DB에 INSERT 되기 직전에 실행. 즉 DB에 값을 넣으면 자동으로 실행됨
-    public void createDate() {
-        this.createDate = LocalDate.now();
+    public Long getId() {
+        return id;
     }
 
-    // Send the user a one-time use code
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhone(String phone) {
+        this.phoneNumber = phone;
+    }
+
+    public int getLoginCode() {
+        return loginCode;
+    }
+
+    public void setLoginCode(int loginCode) {
+        this.loginCode = loginCode;
+    }
+
+    public String getRememberToken() {
+        return rememberToken;
+    }
+
+    public void setRememberToken(String rememberToken) {
+        this.rememberToken = rememberToken;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setDriver(Driver driverByUserId) {
+    }
+
     public void sendNotification(LoginNeedsVerification loginNeedsVerification) {
+
+
     }
-
-//    public void setLoginCode(Object o) {
-//        this.login_code=(String) o;
-//    }
-
-
 }

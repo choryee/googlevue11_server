@@ -1,48 +1,20 @@
 package com.example.googlevue11_server.service;
-
-import com.example.googlevue11_server.events.EventDispatcher;
-import com.example.googlevue11_server.events.TripLocationUpdated;
+import com.example.googlevue11_server.events.TripEvent;
 import com.example.googlevue11_server.models.Trip;
-import com.example.googlevue11_server.repository.TripRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.example.googlevue11_server.models.User;
 
-@Service
-public class TripService {
+public interface TripService {
+    Trip createTrip(String origin, String destination, String destinationName);
 
-    private final TripRepository tripRepository;
-    private final EventDispatcher eventDispatcher;
+    Trip getTripById(Long tripId);
 
-    @Autowired
-    public TripService(TripRepository tripRepository, EventDispatcher eventDispatcher) {
-        this.tripRepository = tripRepository;
-        this.eventDispatcher = eventDispatcher;
-    }
+    void acceptTrip(Trip trip, User driver, String driverLocation);
 
-    public Trip getTripById(String id) {
-        // Fetch trip by ID from the repository
-        return tripRepository.findById(id).orElse(null);
-    }
+    void startTrip(Trip trip);
 
-    public Trip updateTripLocation(int tripId, double latitude, double longitude) {
-        Trip trip = getTripById(String.valueOf(tripId));
+    void endTrip(Trip trip);
 
-        if (trip == null) {
-            return null;
-        }
+    void updateDriverLocation(Trip trip, String driverLocation);
 
-        // Update trip location
-//        trip.setLatitude(latitude);
-//        trip.setLongitude(longitude);
-
-        // Save the updated trip to the repository
-        tripRepository.save(trip);
-
-        // Dispatch TripLocationUpdated event
-        TripLocationUpdated event = new TripLocationUpdated(tripId, latitude, longitude);
-        //eventDispatcher.dispatch(event);
-        eventDispatcher.handleTripLocationUpdatedEvent(event);
-
-        return trip;
-    }
+    void dispatchEvent(TripEvent event);
 }

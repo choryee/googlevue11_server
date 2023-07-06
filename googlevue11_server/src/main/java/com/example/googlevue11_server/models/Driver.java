@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -15,42 +16,109 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
+@Table(name = "drivers")
 public class Driver {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @Column(nullable = true, length = 100)
-    private String name;
-
-
-    @Column(nullable = true, length = 100)
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
-    //@OneToMany(mappedBy = "driver", fetch = FetchType.EAGER)
-    @Column(nullable = true, length = 100)
-    private List<Trip> trip;
+    @Column(name = "year", nullable = true)
+    private Integer year;
 
-    @Column(nullable = true, length = 100)
-    private int year;
-
-    @Column(nullable = true, length = 100)
+    @Column(name = "make", nullable = true)
     private String make;
 
-    @Column(nullable = true, length = 100)
+    @Column(name = "model", nullable = true)
     private String model;
 
-    @Column(nullable = true, length = 100)
+    @Column(name = "color", nullable = true)
     private String color;
 
-    @Column(nullable = true, length = 100)
+    @Column(name = "license_plate", nullable = true)
     private String licensePlate;
 
-    @CreationTimestamp
-    private Timestamp createDate;
+    @Column(name = "created_at", nullable = true)
+    private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = true)
+    private LocalDateTime updatedAt;
 
-    public Driver(int id, int year, String make, String model, String color, String licensePlate) {
+    public Driver(Long id, int year, String make, String model, String color, String licensePlate) {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Integer getYear() {
+        return year;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    public String getMake() {
+        return make;
+    }
+
+    public void setMake(String make) {
+        this.make = make;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

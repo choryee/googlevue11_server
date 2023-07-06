@@ -10,6 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, Long> {
-    Optional<Driver> findByUserId(String userId);
+    Optional<Driver> findByUserId(Long userId);
     // 기타 필요한 메소드 정의
 }

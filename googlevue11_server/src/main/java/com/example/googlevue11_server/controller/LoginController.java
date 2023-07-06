@@ -1,6 +1,6 @@
 package com.example.googlevue11_server.controller;
 
-import com.example.googlevue11_server.messaging.MessagingService;
+import com.example.googlevue11_server.messaging.TwilioMessagingService;
 import com.example.googlevue11_server.models.User;
 import com.example.googlevue11_server.notifications.LoginNeedsVerification;
 import com.example.googlevue11_server.service.UserService;
@@ -9,23 +9,34 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/login")
 public class LoginController {
 
-    private final UserService userService;
-
     @Autowired
-    public LoginController(UserService userService) {
-        this.userService = userService;
+    UserService userService;
+    @Autowired
+    TwilioMessagingService twilioMessagingService;
+
+//    @Autowired
+//    public LoginController(UserService userService, TwilioMessagingService twilioMessagingService) {
+//        this.userService = userService;
+//        this.twilioMessagingService = twilioMessagingService;
+//    }
+
+    public LoginController(){
+
     }
 
+    @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/submit")
     public ResponseEntity<?> submitPhoneNumber(@Validated @RequestBody PhoneRequest phoneRequest) { //PhoneRequest밑에 있음.
         // Validate the phone number
         if (phoneRequest.getPhone() == null || phoneRequest.getPhone().length() < 10) {
             return ResponseEntity.badRequest().body("Invalid phone number입니다");
         }
+        System.out.println(phoneRequest.getPhone());
 
         // Find or create a user model
         User user = userService.findOrCreateUser(phoneRequest.getPhone());
@@ -34,13 +45,16 @@ public class LoginController {
             return ResponseEntity.status(401).body("Could not process a user with that phone number.처리불가");
         }
 
-        // Send the user a one-time use code
-        user.sendNotification(new LoginNeedsVerification());
+        // Send the user a one-time use code 일회용 코드 보내기.
+        LoginNeedsVerification loginNeedsVerification=new LoginNeedsVerification(twilioMessagingService);
+        loginNeedsVerification.sendNotification(phoneRequest.phone);
+        //user.sendNotification(new LoginNeedsVerification(twilioMessagingService));
 
         // Return a response
-        return ResponseEntity.ok("Text message notification sent. 확인문자 발송");
+        return ResponseEntity.ok("Text message notification sent. 확인문자 발송됨...");
     }
 
+    @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/verify")
     public ResponseEntity<?> verifyCode(@Validated @RequestBody VerificationRequest verificationRequest) { //VerificationRequest 밑에 있음.
         // Validate the incoming request
@@ -56,7 +70,7 @@ public class LoginController {
         // Check if the provided code is valid
         if (user != null) {
             // Clear the login code
-            user.setLoginCode(null);
+            user.setLoginCode(user.getLoginCode());
             userService.saveUser(user);
 
             // Return an auth token

@@ -1,144 +1,95 @@
 package com.example.googlevue11_server.controller;
 
-
-import com.example.googlevue11_server.events.*;
-import com.example.googlevue11_server.models.Location;
+import com.example.googlevue11_server.events.TripAcceptedEvent;
+import com.example.googlevue11_server.events.TripCreatedEvent;
+import com.example.googlevue11_server.events.TripEndedEvent;
+import com.example.googlevue11_server.events.TripLocationUpdatedEvent;
+import com.example.googlevue11_server.events.TripStartedEvent;
 import com.example.googlevue11_server.models.Trip;
-
+import com.example.googlevue11_server.models.User;
+//import com.example.googlevue11_server.request.CurrentUser;
+import com.example.googlevue11_server.request.DriverLocationRequest;
+import com.example.googlevue11_server.request.TripRequest;
+import com.example.googlevue11_server.service.TripService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/trips")
 public class TripController {
+    private final TripService tripService;
 
+    @Autowired
+    public TripController(TripService tripService) {
+        this.tripService = tripService;
+    }
 
     @PostMapping
-    public ResponseEntity<Trip> createTrip(@Validated @RequestBody Trip trip) {
-        // Validate request
-        if (trip.getOrigin() == null || trip.getDestination() == null || trip.getDestinationName() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        // Save trip
-        // Replace this with your own logic to create a trip
-        // Example: tripService.createTrip(trip);
-        // ...
-
-        // Dispatch TripCreated event
-        TripCreated event = new TripCreated(trip.getId(), trip.getDriverId()); // Replace with your own event class and implementation
-       // eventDispatcher.dispatch(event);
-
+    public ResponseEntity<Trip> store(@Valid @RequestBody TripRequest request, User user) {
+        Trip trip = tripService.createTrip(request.getOrigin(), request.getDestination(), request.getDestinationName());
+        TripCreatedEvent event = new TripCreatedEvent(trip, user);
+        tripService.dispatchEvent(event);
         return ResponseEntity.ok(trip);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Trip> getTrip(@PathVariable("id") String id) {
-        // Fetch trip by ID
-        // Replace this with your own logic to fetch a trip by ID
-        // Example: Trip trip = tripService.getTripById(id);
-        Trip trip = null;
-
-        if (trip == null) {
-            return ResponseEntity.notFound().build();
+    @GetMapping("/{tripId}")
+    public ResponseEntity<Trip> show(@PathVariable Long tripId,  User user) {
+        Trip trip = tripService.getTripById(tripId);
+        if (trip == null || !trip.belongsToUser(user)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
         return ResponseEntity.ok(trip);
     }
 
-    @PostMapping("/{id}/accept")
-    public ResponseEntity<Trip> acceptTrip(@PathVariable("id") String id, @Validated @RequestBody Location location) {
-        // Fetch trip by ID
-        // Replace this with your own logic to fetch a trip by ID
-        // Example: Trip trip = tripService.getTripById(id);
-        Trip trip = null;
-
-        if (trip == null) {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/{tripId}/accept")
+    public ResponseEntity<Trip> accept(@PathVariable Long tripId, @Valid @RequestBody DriverLocationRequest request, User user) {
+        Trip trip = tripService.getTripById(tripId);
+        if (trip == null || !trip.canBeAcceptedByDriver(user)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
-        // Validate request
-        if (location.getDriverLocation() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        // Update trip with driver information
-        trip.setDriverId(location.getDriverId()); // Replace with appropriate driver ID
-        trip.setDriverLocation(location.getDriverLocation());
-
-        // Dispatch TripAccepted event
-        TripAccepted event = new TripAccepted(location.getTripId(), location.getDriverId()); // Replace with your own event class and implementation
-        // eventDispatcher.dispatch(event);
-
+        tripService.acceptTrip(trip, user, request.getDriverLocation());
+        TripAcceptedEvent event = new TripAcceptedEvent(trip, user);
+        tripService.dispatchEvent(event);
         return ResponseEntity.ok(trip);
     }
 
-    @PostMapping("/{id}/start")
-    public ResponseEntity<Trip> startTrip(@PathVariable("id") String id) {
-        // Fetch trip by ID
-        // Replace this with your own logic to fetch a trip by ID
-        // Example: Trip trip = tripService.getTripById(id);
-        Trip trip = null;
-
-        if (trip == null) {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/{tripId}/start")
+    public ResponseEntity<Trip> start(@PathVariable Long tripId,  User user) {
+        Trip trip = tripService.getTripById(tripId);
+        if (trip == null || !trip.canBeStartedByDriver(user)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
-        // Update trip as started
-        trip.setStarted(true);
-
-        // Dispatch TripStarted event
-        TripStarted event = new TripStarted(trip.getId(), trip.getDriverId()); // Replace with your own event class and implementation
-        // eventDispatcher.dispatch(event);
-
+        tripService.startTrip(trip);
+        TripStartedEvent event = new TripStartedEvent(trip, user);
+        tripService.dispatchEvent(event);
         return ResponseEntity.ok(trip);
     }
 
-    @PostMapping("/{id}/end")
-    public ResponseEntity<Trip> endTrip(@PathVariable("id") String id, Trip trip) {
-        // Fetch trip by ID
-        // Replace this with your own logic to fetch a trip by ID
-        // Example: Trip trip = tripService.getTripById(id);
-        //Trip trip = null;
-
-        if (trip == null) {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/{tripId}/end")
+    public ResponseEntity<Trip> end(@PathVariable Long tripId,  User user) {
+        Trip trip = tripService.getTripById(tripId);
+        if (trip == null || !trip.canBeEndedByDriver(user)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
-        // Update trip as completed
-        trip.setComplete(true);
-
-        // Dispatch TripEnded event
-        TripEnded event = new TripEnded(trip.getId(), trip.getDriverId()); // Replace with your own event class and implementation
-        // eventDispatcher.dispatch(event);
-
+        tripService.endTrip(trip);
+        TripEndedEvent event = new TripEndedEvent(trip, user);
+        tripService.dispatchEvent(event);
         return ResponseEntity.ok(trip);
     }
 
-    @PostMapping("/{id}/location")
-    public ResponseEntity<Trip> updateLocation(@PathVariable("id") String id, @Validated @RequestBody Location location) {
-        // Fetch trip by ID
-        // Replace this with your own logic to fetch a trip by ID
-        // Example: Trip trip = tripService.getTripById(id);
-        Trip trip = null;
-
-        if (trip == null) {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/{tripId}/location")
+    public ResponseEntity<Trip> updateLocation(@PathVariable Long tripId, @Valid @RequestBody DriverLocationRequest request,  User user) {
+        Trip trip = tripService.getTripById(tripId);
+        if (trip == null || !trip.belongsToDriver(user)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
-        // Validate request
-        if (location.getDriverLocation() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        // Update driver location in trip
-        trip.setDriverLocation(location.getDriverLocation());
-
-        // Dispatch TripLocationUpdated event
-        TripLocationUpdated event = new TripLocationUpdated(trip.getId(),location.getLatitude(), location.getLongitude()); // Replace with your own event class and implementation
-        // eventDispatcher.dispatch(event);
-
+        tripService.updateDriverLocation(trip, request.getDriverLocation());
+        TripLocationUpdatedEvent event = new TripLocationUpdatedEvent(trip, user);
+        tripService.dispatchEvent(event);
         return ResponseEntity.ok(trip);
     }
 }

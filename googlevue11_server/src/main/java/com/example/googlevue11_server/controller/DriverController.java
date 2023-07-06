@@ -31,7 +31,7 @@ public class DriverController {
     @GetMapping("/show")
     public ResponseEntity<User> showDriver(RequestEntity<Void> requestEntity) {
         User user = userService.getUserById(requestEntity.getHeaders().get("user-id").get(0));
-        user.setDriver(driverService.getDriverByUserId(String.valueOf(user.getId())));
+        user.setDriver(driverService.getDriverByUserId(user.getId()));
         return ResponseEntity.ok(user);
     }
 
@@ -39,7 +39,7 @@ public class DriverController {
     public ResponseEntity<User> updateDriver(@Validated @RequestBody UpdateDriverRequest request, // UpdateDriverRequest은 밑에 있음.
                                              RequestEntity<Void> requestEntity) {
         User user = userService.getUserById(requestEntity.getHeaders().get("user-id").get(0));
-        Driver driver = driverService.getDriverByUserId(String.valueOf(user.getId()));
+        Driver driver = driverService.getDriverByUserId(user.getId());
 
         // Update user name
         user.setName(request.getName());

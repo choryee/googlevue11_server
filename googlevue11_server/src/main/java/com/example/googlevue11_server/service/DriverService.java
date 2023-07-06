@@ -17,7 +17,7 @@ public class DriverService {
         this.driverRepository = driverRepository;
     }
 
-    public Driver getDriverByUserId(String userId) {
+    public Driver getDriverByUserId(Long userId) {
         // Implement logic to get a driver by the user ID from the database
         return driverRepository.findByUserId(userId).orElse(null);
     }
