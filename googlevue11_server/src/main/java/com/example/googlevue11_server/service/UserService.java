@@ -58,25 +58,25 @@ public class UserService {
 //        return "GeneratedAuthToken";
 //    }
 
-    public String generateAuthToken(User user) {
-        // Generate an authentication token for the user
-        // This method should generate a unique authentication token for the user
-        // and associate it with the user in a secure manner, such as using JWT (JSON Web Tokens)
-        // The token can be used for subsequent authentication and authorization purposes
-        // You can use libraries like io.jsonwebtoken.Jwts to generate JWT tokens
-
-        // Example implementation:
-        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-
-        // 토큰 생성
-        String token = Jwts.builder()
-                .setSubject(String.valueOf(user.getId()))
-                .setIssuedAt(new Date())
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-
-        return token;
-    }
+//    public String generateAuthToken(User user) {
+//        // Generate an authentication token for the user
+//        // This method should generate a unique authentication token for the user
+//        // and associate it with the user in a secure manner, such as using JWT (JSON Web Tokens)
+//        // The token can be used for subsequent authentication and authorization purposes
+//        // You can use libraries like io.jsonwebtoken.Jwts to generate JWT tokens
+//
+//        // Example implementation:
+//        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+//
+//        // 토큰 생성
+//        String token = Jwts.builder()
+//                .setSubject(String.valueOf(user.getId()))
+//                .setIssuedAt(new Date())
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//
+//        return token;
+//    }
 
 
     public void sendNotification(User user, LoginNeedsVerification notification) {

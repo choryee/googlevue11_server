@@ -5,10 +5,19 @@ import com.example.googlevue11_server.messaging.TwilioMessagingService;
 import com.example.googlevue11_server.models.User;
 import com.example.googlevue11_server.notifications.LoginNeedsVerification;
 import com.example.googlevue11_server.service.UserService;
+import com.example.googlevue11_server.utils.JwtUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.crypto.SecretKey;
 
 @CrossOrigin(origins = "http://localhost:8080")
 @RestController
@@ -19,8 +28,10 @@ public class LoginController {
     UserService userService;
     @Autowired
     TwilioMessagingService twilioMessagingService;
+    @Autowired
+    JwtUtil jwtUtil;
 
-    LoginCodeGenerator loginCodeGenerator=new LoginCodeGenerator();
+    LoginCodeGenerator loginCodeGenerator = new LoginCodeGenerator();
 
 //    @Autowired
 //    public LoginController(UserService userService, TwilioMessagingService twilioMessagingService) {
@@ -28,7 +39,7 @@ public class LoginController {
 //        this.twilioMessagingService = twilioMessagingService;
 //    }
 
-    public LoginController(){
+    public LoginController() {
 
     }
 
@@ -49,7 +60,7 @@ public class LoginController {
         }
 
         // Send the user a one-time use code 일회용 코드 보내기.
-        LoginNeedsVerification loginNeedsVerification=new LoginNeedsVerification(twilioMessagingService);
+        LoginNeedsVerification loginNeedsVerification = new LoginNeedsVerification(twilioMessagingService);
         loginNeedsVerification.sendNotification(phoneRequest.phone);
         //user.sendNotification(new LoginNeedsVerification(twilioMessagingService));
 
@@ -57,6 +68,25 @@ public class LoginController {
 
         // Return a response
         return ResponseEntity.ok("Text message notification sent. 확인문자 발송됨...");
+    }
+
+    String token=null;
+    @GetMapping("/submit") //Get
+    public ResponseEntity<String> submitLogin(@RequestHeader("Authorization") String authorizationHeader) {
+        // Authorization 헤더에서 토큰 추출
+        token= jwtUtil.extractToken(authorizationHeader);
+        System.out.println(" 받은 token>>"+token); // 토큰 받아옴.
+
+
+        // 토큰 인증을 수행하는 로직
+        if (jwtUtil.authenticateToken(token)) {
+            // 토큰이 유효한 경우
+           // return ResponseEntity.ok("Authentication successful");
+            return ResponseEntity.ok("ok");
+        } else {
+            // 토큰이 유효하지 않은 경우
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
     }
 
     @CrossOrigin(origins = "http://localhost:8080")
@@ -79,7 +109,9 @@ public class LoginController {
             userService.saveUser(user);
 
             // Return an auth token
-            String authToken = userService.generateAuthToken(user);
+            String authToken = jwtUtil.generateToken(user);
+            // user.setRememberToken(authToken); 저장 안됨.
+
             System.out.println("authToken>>"+authToken);
             return ResponseEntity.ok(authToken);
         }

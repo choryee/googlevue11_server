@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -42,9 +43,11 @@ public class Driver {
     private String licensePlate;
 
     @Column(name = "created_at", nullable = true)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = true)
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     public Driver(Long id, int year, String make, String model, String color, String licensePlate) {

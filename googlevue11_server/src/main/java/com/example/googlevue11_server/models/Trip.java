@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -45,10 +47,12 @@ public class Trip {
     @Column(name = "driver_location", columnDefinition = "JSON")
     private String driverLocation;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = true)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = true)
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     public Long getId() {
@@ -137,6 +141,10 @@ public class Trip {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void updateUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean belongsToUser(User user) {

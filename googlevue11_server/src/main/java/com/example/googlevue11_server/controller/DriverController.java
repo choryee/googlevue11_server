@@ -6,6 +6,7 @@ import com.example.googlevue11_server.models.User;
 import com.example.googlevue11_server.service.DriverService;
 import com.example.googlevue11_server.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/drivers")
+@RequestMapping("/api")
 public class DriverController {
 
     private final UserService userService;
@@ -28,12 +31,25 @@ public class DriverController {
         this.driverService = driverService;
     }
 
-    @GetMapping("/show")
-    public ResponseEntity<User> showDriver(RequestEntity<Void> requestEntity) {
-        User user = userService.getUserById(requestEntity.getHeaders().get("user-id").get(0));
-        user.setDriver(driverService.getDriverByUserId(user.getId()));
-        return ResponseEntity.ok(user);
-    }
+//    @GetMapping("/driver")
+//    public ResponseEntity<User> showDriver(RequestEntity<Void> requestEntity) {
+//        List<String> userIdHeaders = requestEntity.getHeaders().get("user-id");
+//        if (userIdHeaders != null && !userIdHeaders.isEmpty()) {
+//            String userId = userIdHeaders.get(0);
+//            User user = userService.getUserById(userId);
+//            System.out.println("user >>> " + user);
+//            // user.setDriver(driverService.getDriverByUserId(user.getId()));
+//            return ResponseEntity.ok(user);
+//        } else {
+//            // "user-id" 헤더가 없거나 값이 비어 있을 때 처리할 내용 추가
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+//        }
+//    }
+        @GetMapping("/driver")
+        public ResponseEntity<User> show(User user){
+            User user1=userService.getUserById(user.getId());
+            return ResponseEntity.ok(user1);
+        }
 
     @PatchMapping("/update")
     public ResponseEntity<User> updateDriver(@Validated @RequestBody UpdateDriverRequest request, // UpdateDriverRequest은 밑에 있음.

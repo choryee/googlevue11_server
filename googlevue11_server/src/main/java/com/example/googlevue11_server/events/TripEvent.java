@@ -22,19 +22,19 @@ public class TripEvent extends ApplicationEvent {
         return user;
     }
 
-     class TripCreatedEvent extends TripEvent {
+     public static class TripCreatedEvent extends TripEvent {
         public TripCreatedEvent(Trip trip, User user) {
             super(trip, user);
         }
     }
 
-     class TripAcceptedEvent extends TripEvent {
+     public static class TripAcceptedEvent extends TripEvent {
         public TripAcceptedEvent(Trip trip, User user) {
             super(trip, user);
         }
     }
 
-     class TripStartedEvent extends TripEvent {
+     public static class TripStartedEvent extends TripEvent {
         public TripStartedEvent(Trip trip, User user) {
             super(trip, user);
         }
